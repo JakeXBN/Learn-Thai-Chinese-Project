@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>泰语学习 · เรียนภาษาไทย</title>
+<style>
+  body { font-family: sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+  h1 { text-align: center; font-size: 1.4em; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; max-width: 900px; margin: 0 auto; }
+  .card { background: #fff; border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+  .card:hover { transform: translateY(-3px); }
+  .card .thai { font-size: 1.3em; font-weight: bold; margin-bottom: 6px; }
+  .card .roman { color: #888; font-size: 0.85em; margin-bottom: 4px; }
+  .card .chinese { font-size: 1.1em; }
+  .card .pinyin { color: #888; font-size: 0.85em; }
+  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 10; }
+  .modal.active { display: flex; }
+  .modal-content { background: #fff; border-radius: 16px; padding: 40px; text-align: center; min-width: 280px; position: relative; }
+  .modal-content .thai { font-size: 2.5em; font-weight: bold; margin-bottom: 12px; }
+  .modal-content .roman { color: #888; font-size: 1.1em; margin-bottom: 8px; }
+  .modal-content .chinese { font-size: 1.8em; margin-bottom: 6px; }
+  .modal-content .pinyin { color: #888; font-size: 1.1em; }
+  .close { position: absolute; top: 12px; right: 16px; font-size: 1.5em; cursor: pointer; color: #aaa; }
+  .hint { text-align: center; color: #999; font-size: 0.85em; margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<h1>泰语学习 · เรียนภาษาไทย</h1>
+<div class="grid" id="grid"></div>
+<p class="hint">点卡片放大并自动发音 · 左右滑动切换（暂未实现滑动）</p>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <span class="close" id="close">&times;</span>
+    <div class="thai" id="m-thai"></div>
+    <div class="roman" id="m-roman"></div>
+    <div class="chinese" id="m-chinese"></div>
+    <div class="pinyin" id="m-pinyin"></div>
+  </div>
+</div>
+
+<script>
+let words = [];
+let currentIndex = 0;
+
+fetch('words.json')
+  .then(res => res.json())
+  .then(data => {
+    words = data;
+    renderGrid();
+  })
+  .catch(err => {
+    document.getElementById('grid').innerHTML = '<p style="color:red">加载 words.json 失败，请检查文件是否存在且格式正确。</p>';
+    console.error(err);
+  });
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  words.forEach((w, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="thai">${w.thai}</div>
+      <div class="roman">${w.roman}</div>
+      <div class="chinese">${w.chinese}</div>
+      <div class="pinyin">${w.pinyin}</div>
+    `;
+    card.onclick = () => openModal(i);
+    grid.appendChild(card);
+  });
+}
+
+function openModal(i) {
+  currentIndex = i;
+  const w = words[i];
+  document.getElementById('m-thai').textContent = w.thai;
+  document.getElementById('m-roman').textContent = w.roman;
+  document.getElementById('m-chinese').textContent = w.chinese;
+  document.getElementById('m-pinyin').textContent = w.pinyin;
+  document.getElementById('modal').classList.add('active');
+  speak(w.thai);
+}
+
+function speak(text) {
+  if ('speechSynthesis' in window) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'th-TH';
+    speechSynthesis.speak(u);
+  }
+}
+
+document.getElementById('close').onclick = () => {
+  document.getElementById('modal').classList.remove('active');
+};
+document.getElementById('modal').onclick = (e) => {
+  if (e.target.id === 'modal') document.getElementById('modal').classList.remove('active');
+};
+</script>
+</body>
+</html>
