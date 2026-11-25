@@ -3,101 +3,248 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>泰语学习 · เรียนภาษาไทย</title>
+<title>中泰双语学习系统</title>
 <style>
-  body { font-family: sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
-  h1 { text-align: center; font-size: 1.4em; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; max-width: 900px; margin: 0 auto; }
-  .card { background: #fff; border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
-  .card:hover { transform: translateY(-3px); }
-  .card .thai { font-size: 1.3em; font-weight: bold; margin-bottom: 6px; }
-  .card .roman { color: #888; font-size: 0.85em; margin-bottom: 4px; }
-  .card .chinese { font-size: 1.1em; }
-  .card .pinyin { color: #888; font-size: 0.85em; }
-  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 10; }
-  .modal.active { display: flex; }
-  .modal-content { background: #fff; border-radius: 16px; padding: 40px; text-align: center; min-width: 280px; position: relative; }
-  .modal-content .thai { font-size: 2.5em; font-weight: bold; margin-bottom: 12px; }
-  .modal-content .roman { color: #888; font-size: 1.1em; margin-bottom: 8px; }
-  .modal-content .chinese { font-size: 1.8em; margin-bottom: 6px; }
-  .modal-content .pinyin { color: #888; font-size: 1.1em; }
-  .close { position: absolute; top: 12px; right: 16px; font-size: 1.5em; cursor: pointer; color: #aaa; }
-  .hint { text-align: center; color: #999; font-size: 0.85em; margin-top: 24px; }
+  :root { --primary: #4f46e5; --bg: #f9fafb; --card: #fff; --text: #1f2937; --gray: #6b7280; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+  h1 { font-size: 1.5em; margin-bottom: 10px; }
+  
+  /* 模式切换按钮 */
+  .modes { display: flex; gap: 10px; margin-bottom: 20px; background: #e5e7eb; padding: 5px; border-radius: 10px; }
+  .modes button { border: none; background: transparent; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold; color: var(--gray); transition: 0.2s; }
+  .modes button.active { background: var(--card); color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+  /* 卡片容器 */
+  .container { width: 100%; max-width: 600px; min-height: 350px; position: relative; }
+  .card { background: var(--card); border-radius: 16px; padding: 30px 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; }
+  .card.active { display: flex; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* 卡片内容 */
+  .word-box { margin: 15px 0; cursor: pointer; padding: 10px 20px; border-radius: 10px; transition: background 0.2s; }
+  .word-box:hover { background: #f3f4f6; }
+  .thai { font-size: 2.5em; font-weight: bold; color: var(--primary); }
+  .chinese { font-size: 2em; font-weight: bold; color: #111827; }
+  .roman { color: var(--gray); font-size: 1.1em; margin-top: 5px; }
+  .pinyin { color: var(--gray); font-size: 1.1em; }
+  .tip { font-size: 0.85em; color: #9ca3af; margin-top: 10px; }
+
+  /* 导航按钮 */
+  .nav { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 600px; margin-top: 20px; }
+  .nav button { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 1em; cursor: pointer; font-weight: bold; transition: 0.2s; }
+  .nav button:hover { opacity: 0.9; }
+  .nav button:disabled { background: #d1d5db; cursor: not-allowed; }
+  .counter { font-weight: bold; color: var(--gray); }
+
+  /* 测验模式 */
+  .options { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px; }
+  .options button { background: #fff; border: 2px solid #e5e7eb; padding: 15px; border-radius: 10px; font-size: 1.1em; cursor: pointer; transition: 0.2s; color: var(--text); }
+  .options button:hover { border-color: var(--primary); }
+  .options button.correct { background: #d1fae5; border-color: #10b981; color: #065f46; }
+  .options button.wrong { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+  
+  .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
-<h1>泰语学习 · เรียนภาษาไทย</h1>
-<div class="grid" id="grid"></div>
-<p class="hint">点卡片放大并自动发音 · 左右滑动切换（暂未实现滑动）</p>
+<h1>中泰双语学习系统</h1>
 
-<div class="modal" id="modal">
-  <div class="modal-content">
-    <span class="close" id="close">&times;</span>
-    <div class="thai" id="m-thai"></div>
-    <div class="roman" id="m-roman"></div>
-    <div class="chinese" id="m-chinese"></div>
-    <div class="pinyin" id="m-pinyin"></div>
+<div class="modes">
+  <button id="btn-learn" class="active" onclick="switchMode('learn')">学习模式</button>
+  <button id="btn-recite" onclick="switchMode('recite')">背诵模式</button>
+  <button id="btn-quiz" onclick="switchMode('quiz')">考核模式</button>
+</div>
+
+<div class="container">
+  <!-- 学习模式卡片 -->
+  <div class="card active" id="card-learn">
+    <div class="word-box" onclick="speak(thaiText, 'th-TH')">
+      <div class="thai" id="l-thai"></div>
+      <div class="roman" id="l-roman"></div>
+    </div>
+    <div class="word-box" onclick="speak(chineseText, 'zh-CN')">
+      <div class="chinese" id="l-chinese"></div>
+      <div class="pinyin" id="l-pinyin"></div>
+    </div>
+    <div class="tip">👆 点击泰语或中文卡片即可发音</div>
   </div>
+
+  <!-- 背诵模式卡片 -->
+  <div class="card" id="card-recite">
+    <div class="word-box" onclick="speak(currentReciteLang === 'th' ? thaiText : chineseText, currentReciteLang === 'th' ? 'th-TH' : 'zh-CN')">
+      <div class="thai" id="r-text"></div>
+      <div class="roman" id="r-roman"></div>
+    </div>
+    <button onclick="toggleRecite()" style="margin-top:20px; padding:8px 16px; border-radius:20px; border:1px solid #ccc; background:#fff; cursor:pointer;">显示 / 隐藏翻译</button>
+    <div class="tip">👆 点击文字发音</div>
+  </div>
+
+  <!-- 考核模式卡片 -->
+  <div class="card" id="card-quiz">
+    <div class="thai" id="q-question"></div>
+    <div class="options" id="q-options"></div>
+    <div class="tip" id="q-feedback" style="margin-top:15px; font-weight:bold; min-height:20px;"></div>
+  </div>
+</div>
+
+<div class="nav">
+  <button id="btn-prev" onclick="prevCard()">上一题</button>
+  <span class="counter" id="counter">1 / 10</span>
+  <button id="btn-next" onclick="nextCard()">下一题</button>
 </div>
 
 <script>
 let words = [];
 let currentIndex = 0;
+let currentMode = 'learn';
+let isFlipped = false;
+let currentReciteLang = 'th';
+let quizAnswered = false;
 
+let thaiText = '';
+let chineseText = '';
+
+// 获取数据
 fetch('words.json')
   .then(res => res.json())
   .then(data => {
     words = data;
-    renderGrid();
+    updateUI();
   })
   .catch(err => {
-    document.getElementById('grid').innerHTML = '<p style="color:red">加载 words.json 失败，请检查文件是否存在且格式正确。</p>';
-    console.error(err);
+    document.querySelector('.container').innerHTML = '<p style="color:red; text-align:center;">加载 words.json 失败，请检查文件。</p>';
   });
 
-function renderGrid() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  words.forEach((w, i) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <div class="thai">${w.thai}</div>
-      <div class="roman">${w.roman}</div>
-      <div class="chinese">${w.chinese}</div>
-      <div class="pinyin">${w.pinyin}</div>
-    `;
-    card.onclick = () => openModal(i);
-    grid.appendChild(card);
-  });
-}
-
-function openModal(i) {
-  currentIndex = i;
-  const w = words[i];
-  document.getElementById('m-thai').textContent = w.thai;
-  document.getElementById('m-roman').textContent = w.roman;
-  document.getElementById('m-chinese').textContent = w.chinese;
-  document.getElementById('m-pinyin').textContent = w.pinyin;
-  document.getElementById('modal').classList.add('active');
-  speak(w.thai);
-}
-
-function speak(text) {
+function speak(text, lang) {
   if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel(); // 停止之前的发音
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'th-TH';
-    speechSynthesis.speak(u);
+    u.lang = lang;
+    u.rate = 0.9; // 稍微慢一点
+    window.speechSynthesis.speak(u);
   }
 }
 
-document.getElementById('close').onclick = () => {
-  document.getElementById('modal').classList.remove('active');
-};
-document.getElementById('modal').onclick = (e) => {
-  if (e.target.id === 'modal') document.getElementById('modal').classList.remove('active');
-};
+function switchMode(mode) {
+  currentMode = mode;
+  currentIndex = 0;
+  quizAnswered = false;
+  document.querySelectorAll('.modes button').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-' + mode).classList.add('active');
+  
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  document.getElementById('card-' + mode).classList.add('active');
+  
+  document.getElementById('q-feedback').textContent = '';
+  updateUI();
+}
+
+function updateUI() {
+  if (words.length === 0) return;
+  const w = words[currentIndex];
+  thaiText = w.thai;
+  chineseText = w.chinese;
+
+  // 更新计数器
+  document.getElementById('counter').textContent = `${currentIndex + 1} / ${words.length}`;
+  
+  // 按钮状态
+  document.getElementById('btn-prev').disabled = currentIndex === 0;
+  document.getElementById('btn-next').disabled = currentIndex === words.length - 1;
+
+  if (currentMode === 'learn') {
+    document.getElementById('l-thai').textContent = w.thai;
+    document.getElementById('l-roman').textContent = w.roman;
+    document.getElementById('l-chinese').textContent = w.chinese;
+    document.getElementById('l-pinyin').textContent = w.pinyin;
+  } 
+  else if (currentMode === 'recite') {
+    isFlipped = false;
+    currentReciteLang = 'th';
+    document.getElementById('r-text').textContent = w.thai;
+    document.getElementById('r-roman').textContent = w.roman;
+    document.getElementById('r-text').className = 'thai';
+    document.getElementById('r-roman').className = 'roman';
+  } 
+  else if (currentMode === 'quiz') {
+    quizAnswered = false;
+    document.getElementById('q-feedback').textContent = '';
+    document.getElementById('q-question').textContent = w.thai; // 问泰语，选中文
+    document.getElementById('q-options').innerHTML = '';
+    
+    // 生成选项（正确答案 + 3个随机错误答案）
+    let options = [w.chinese];
+    let pool = words.filter(item => item.chinese !== w.chinese);
+    while (options.length < Math.min(4, words.length)) {
+      let randomWord = pool[Math.floor(Math.random() * pool.length)];
+      if (!options.includes(randomWord.chinese)) {
+        options.push(randomWord.chinese);
+      }
+    }
+    // 打乱选项
+    options.sort(() => Math.random() - 0.5);
+    
+    options.forEach(opt => {
+      let btn = document.createElement('button');
+      btn.textContent = opt;
+      btn.onclick = () => checkAnswer(opt, w.chinese, btn);
+      document.getElementById('q-options').appendChild(btn);
+    });
+  }
+}
+
+function toggleRecite() {
+  isFlipped = !isFlipped;
+  const w = words[currentIndex];
+  if (isFlipped) {
+    currentReciteLang = 'zh';
+    document.getElementById('r-text').textContent = w.chinese;
+    document.getElementById('r-roman').textContent = w.pinyin;
+    document.getElementById('r-text').className = 'chinese';
+  } else {
+    currentReciteLang = 'th';
+    document.getElementById('r-text').textContent = w.thai;
+    document.getElementById('r-roman').textContent = w.roman;
+    document.getElementById('r-text').className = 'thai';
+  }
+}
+
+function checkAnswer(selected, correct, btnElement) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  
+  const allBtns = document.getElementById('q-options').querySelectorAll('button');
+  allBtns.forEach(b => b.disabled = true);
+
+  if (selected === correct) {
+    btnElement.classList.add('correct');
+    document.getElementById('q-feedback').textContent = '✅ 回答正确！';
+    document.getElementById('q-feedback').style.color = '#10b981';
+  } else {
+    btnElement.classList.add('wrong');
+    document.getElementById('q-feedback').textContent = `❌ 错误，正确答案是：${correct}`;
+    document.getElementById('q-feedback').style.color = '#ef4444';
+    allBtns.forEach(b => {
+      if (b.textContent === correct) b.classList.add('correct');
+    });
+  }
+}
+
+function prevCard() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    updateUI();
+  }
+}
+
+function nextCard() {
+  if (currentIndex < words.length - 1) {
+    currentIndex++;
+    updateUI();
+  }
+}
 </script>
 </body>
 </html>
