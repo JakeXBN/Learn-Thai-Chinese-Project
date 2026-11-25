@@ -2,63 +2,101 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>中泰双语学习系统</title>
 <style>
   :root { --primary: #4f46e5; --bg: #f9fafb; --card: #fff; --text: #1f2937; --gray: #6b7280; }
-  * { box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-  h1 { font-size: 1.5em; margin-bottom: 10px; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
   
+  .header-area { width: 100%; max-width: 600px; text-align: center; margin-bottom: 15px; }
+  h1 { font-size: 1.3em; margin: 5px 0 15px 0; }
+  
+  /* 分类标签栏 */
+  .tags-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 15px; scrollbar-width: none; }
+  .tags-container::-webkit-scrollbar { display: none; }
+  .tag-btn { background: #e5e7eb; color: var(--gray); border: none; padding: 6px 14px; border-radius: 20px; font-size: 0.9em; white-space: nowrap; cursor: pointer; transition: 0.2s; }
+  .tag-btn.active { background: var(--primary); color: white; font-weight: bold; }
+
   /* 模式切换按钮 */
-  .modes { display: flex; gap: 10px; margin-bottom: 20px; background: #e5e7eb; padding: 5px; border-radius: 10px; }
-  .modes button { border: none; background: transparent; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold; color: var(--gray); transition: 0.2s; }
+  .modes { display: flex; gap: 5px; margin-bottom: 20px; background: #e5e7eb; padding: 4px; border-radius: 10px; width: 100%; max-width: 400px; }
+  .modes button { flex: 1; border: none; background: transparent; padding: 10px 0; border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: bold; color: var(--gray); transition: 0.2s; }
   .modes button.active { background: var(--card); color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
   /* 卡片容器 */
-  .container { width: 100%; max-width: 600px; min-height: 350px; position: relative; }
-  .card { background: var(--card); border-radius: 16px; padding: 30px 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; }
+  .container { width: 100%; max-width: 600px; position: relative; }
+  .card { background: var(--card); border-radius: 16px; padding: 25px 15px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 320px; }
   .card.active { display: flex; animation: fadeIn 0.3s; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
   /* 卡片内容 */
-  .word-box { margin: 15px 0; cursor: pointer; padding: 10px 20px; border-radius: 10px; transition: background 0.2s; }
-  .word-box:hover { background: #f3f4f6; }
-  .thai { font-size: 2.5em; font-weight: bold; color: var(--primary); }
-  .chinese { font-size: 2em; font-weight: bold; color: #111827; }
-  .roman { color: var(--gray); font-size: 1.1em; margin-top: 5px; }
-  .pinyin { color: var(--gray); font-size: 1.1em; }
-  .tip { font-size: 0.85em; color: #9ca3af; margin-top: 10px; }
+  .word-box { margin: 12px 0; cursor: pointer; padding: 15px; border-radius: 10px; width: 100%; transition: background 0.2s; }
+  .word-box:active { background: #f3f4f6; }
+  .thai { font-size: 2.2em; font-weight: bold; color: var(--primary); word-wrap: break-word; }
+  .chinese { font-size: 1.8em; font-weight: bold; color: #111827; word-wrap: break-word; }
+  .roman { color: var(--gray); font-size: 1em; margin-top: 8px; }
+  .pinyin { color: var(--gray); font-size: 1em; margin-top: 5px; }
+  .tip { font-size: 0.8em; color: #9ca3af; margin-top: 15px; }
 
   /* 导航按钮 */
   .nav { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 600px; margin-top: 20px; }
-  .nav button { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 10px; font-size: 1em; cursor: pointer; font-weight: bold; transition: 0.2s; }
-  .nav button:hover { opacity: 0.9; }
-  .nav button:disabled { background: #d1d5db; cursor: not-allowed; }
-  .counter { font-weight: bold; color: var(--gray); }
+  .nav button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 1em; cursor: pointer; font-weight: bold; transition: 0.2s; flex: 0 0 30%; }
+  .nav button:active { opacity: 0.8; }
+  .nav button:disabled { background: #d1d5db; }
+  .counter { font-weight: bold; color: var(--gray); font-size: 0.95em; }
 
-  /* 测验模式 */
-  .options { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px; }
-  .options button { background: #fff; border: 2px solid #e5e7eb; padding: 15px; border-radius: 10px; font-size: 1.1em; cursor: pointer; transition: 0.2s; color: var(--text); }
-  .options button:hover { border-color: var(--primary); }
-  .options button.correct { background: #d1fae5; border-color: #10b981; color: #065f46; }
-  .options button.wrong { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+  /* 测验选项 */
+  .options { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px; }
+  .options button { background: #fff; border: 2px solid #e5e7eb; padding: 14px; border-radius: 10px; font-size: 1em; cursor: pointer; transition: 0.2s; color: var(--text); }
+  .options button:active { border-color: var(--primary); }
+  .options button.correct { background: #d1fae5; border-color: #10b981; color: #065f46; font-weight: bold;}
+  .options button.wrong { background: #fee2e2; border-color: #ef4444; color: #991b1b; font-weight: bold;}
+
+  /* 底部管理按钮 */
+  .admin-bar { width: 100%; max-width: 600px; margin-top: 30px; text-align: center; padding-bottom: 30px; }
+  .admin-btn { background: transparent; border: 1px dashed #9ca3af; color: var(--gray); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9em; }
   
-  .hidden { display: none !important; }
+  /* 弹窗后台界面 */
+  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; padding: 15px; }
+  .modal.active { display: flex; }
+  .modal-content { background: #fff; border-radius: 12px; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+  .modal-header { padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h2 { margin: 0; font-size: 1.1em; }
+  .modal-body { padding: 15px; overflow-y: auto; flex: 1; }
+  
+  /* 表单样式 */
+  .form-group { margin-bottom: 12px; }
+  .form-group label { display: block; font-size: 0.85em; color: var(--gray); margin-bottom: 4px; }
+  .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1em; }
+  .btn-save { background: var(--primary); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 1em; margin-top: 10px; }
+  
+  /* 词库列表 */
+  .word-list { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+  .word-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 0.9em; }
+  .word-item .info { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .word-item .ops button { background: #fee2e2; color: #ef4444; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+  
+  @media (max-width: 380px) {
+    .thai { font-size: 1.8em; }
+    .chinese { font-size: 1.5em; }
+    .modes button { font-size: 0.85em; }
+  }
 </style>
 </head>
 <body>
 
-<h1>中泰双语学习系统</h1>
+<div class="header-area">
+  <h1>中泰双语学习</h1>
+  <div class="tags-container" id="tags-container"></div>
+</div>
 
 <div class="modes">
-  <button id="btn-learn" class="active" onclick="switchMode('learn')">学习模式</button>
-  <button id="btn-recite" onclick="switchMode('recite')">背诵模式</button>
-  <button id="btn-quiz" onclick="switchMode('quiz')">考核模式</button>
+  <button id="btn-learn" class="active" onclick="switchMode('learn')">学习</button>
+  <button id="btn-recite" onclick="switchMode('recite')">背诵</button>
+  <button id="btn-quiz" onclick="switchMode('quiz')">考核</button>
 </div>
 
 <div class="container">
-  <!-- 学习模式卡片 -->
   <div class="card active" id="card-learn">
     <div class="word-box" onclick="speak(thaiText, 'th-TH')">
       <div class="thai" id="l-thai"></div>
@@ -68,20 +106,18 @@
       <div class="chinese" id="l-chinese"></div>
       <div class="pinyin" id="l-pinyin"></div>
     </div>
-    <div class="tip">👆 点击泰语或中文卡片即可发音</div>
+    <div class="tip">👆 点击文字即可发音</div>
   </div>
 
-  <!-- 背诵模式卡片 -->
   <div class="card" id="card-recite">
     <div class="word-box" onclick="speak(currentReciteLang === 'th' ? thaiText : chineseText, currentReciteLang === 'th' ? 'th-TH' : 'zh-CN')">
       <div class="thai" id="r-text"></div>
       <div class="roman" id="r-roman"></div>
     </div>
-    <button onclick="toggleRecite()" style="margin-top:20px; padding:8px 16px; border-radius:20px; border:1px solid #ccc; background:#fff; cursor:pointer;">显示 / 隐藏翻译</button>
+    <button onclick="toggleRecite()" style="margin-top:15px; padding:10px 20px; border-radius:20px; border:1px solid #ccc; background:#fff; cursor:pointer; font-size:0.9em;">显示 / 隐藏翻译</button>
     <div class="tip">👆 点击文字发音</div>
   </div>
 
-  <!-- 考核模式卡片 -->
   <div class="card" id="card-quiz">
     <div class="thai" id="q-question"></div>
     <div class="options" id="q-options"></div>
@@ -95,34 +131,113 @@
   <button id="btn-next" onclick="nextCard()">下一题</button>
 </div>
 
+<!-- 底部管理入口 -->
+<div class="admin-bar">
+  <button class="admin-btn" onclick="openAdmin()">📁 管理员点此管理词库</button>
+</div>
+
+<!-- 词库管理弹窗 -->
+<div class="modal" id="admin-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>词库管理后台</h2>
+      <button onclick="closeAdmin()" style="border:none; background:none; font-size:1.5em; cursor:pointer;">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- 添加表单 -->
+      <div style="background:#f9fafb; padding:15px; border-radius:8px;">
+        <div class="form-group"><label>泰语 (Thai)</label><input id="in-thai" placeholder="例如: เอกสาร"></div>
+        <div class="form-group"><label>罗马音 (Roman)</label><input id="in-roman" placeholder="例如: èek-kà-sǎan"></div>
+        <div class="form-group"><label>中文 (Chinese)</label><input id="in-chinese" placeholder="例如: 文件"></div>
+        <div class="form-group"><label>拼音 (Pinyin)</label><input id="in-pinyin" placeholder="例如: wén jiàn"></div>
+        <div class="form-group"><label>标签 (多个用英文逗号隔开)</label><input id="in-tags" placeholder="例如: 文件管制, 办公用品"></div>
+        <button class="btn-save" onclick="addWord()">添加词条</button>
+      </div>
+      
+      <!-- 当前列表 -->
+      <div class="word-list" id="admin-list"></div>
+      
+      <!-- 导出代码 -->
+      <button class="btn-save" style="background:#10b981; margin-top:20px;" onclick="exportData()">📤 导出 JSON (替换到 GitHub)</button>
+    </div>
+  </div>
+</div>
+
 <script>
-let words = [];
+// 默认词库数据 (如果浏览器本地没存过，就用这段初始数据)
+let defaultWords = [
+  { thai: "เอกสาร", roman: "èek-kà-sǎan", chinese: "文件", pinyin: "wén jiàn", tags: ["文件管制", "办公用品"] },
+  { thai: "เวอร์ชัน", roman: "wəə-chan", chinese: "版本", pinyin: "bǎn běn", tags: ["文件管制"] },
+  { thai: "สวัสดี", roman: "sà-wàt-dii", chinese: "你好", pinyin: "nǐ hǎo", tags: ["日常对话"] }
+];
+
+let allWords = [];
+let currentWords = [];
 let currentIndex = 0;
 let currentMode = 'learn';
 let isFlipped = false;
 let currentReciteLang = 'th';
 let quizAnswered = false;
+let currentTag = '全部';
+let thaiText = '', chineseText = '';
 
-let thaiText = '';
-let chineseText = '';
+// 初始化加载数据
+function initData() {
+  // 尝试从浏览器本地读取（为了实现管理后台预览保存）
+  const localData = localStorage.getItem('my_thai_words');
+  if (localData) {
+    allWords = JSON.parse(localData);
+  } else {
+    allWords = [...defaultWords];
+  }
+  initTags();
+  filterWords();
+}
 
-// 获取数据
-fetch('words.json')
-  .then(res => res.json())
-  .then(data => {
-    words = data;
-    updateUI();
-  })
-  .catch(err => {
-    document.querySelector('.container').innerHTML = '<p style="color:red; text-align:center;">加载 words.json 失败，请检查文件。</p>';
+// 初始化分类标签 (支持一个词有多个标签)
+function initTags() {
+  let tagSet = new Set();
+  allWords.forEach(w => {
+    if (w.tags && Array.isArray(w.tags)) {
+      w.tags.forEach(t => tagSet.add(t));
+    }
   });
+  const tags = ['全部', ...Array.from(tagSet)];
+  
+  const container = document.getElementById('tags-container');
+  container.innerHTML = '';
+  tags.forEach(tag => {
+    const btn = document.createElement('button');
+    btn.className = 'tag-btn' + (tag === currentTag ? ' active' : '');
+    btn.textContent = tag;
+    btn.onclick = () => {
+      currentTag = tag;
+      document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterWords();
+    };
+    container.appendChild(btn);
+  });
+}
 
+// 筛选单词
+function filterWords() {
+  if (currentTag === '全部') {
+    currentWords = [...allWords];
+  } else {
+    currentWords = allWords.filter(w => w.tags && w.tags.includes(currentTag));
+  }
+  currentIndex = 0;
+  updateUI();
+}
+
+// 语音引擎调整
 function speak(text, lang) {
   if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel(); // 停止之前的发音
+    window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang;
-    u.rate = 0.9; // 稍微慢一点
+    u.rate = (lang === 'zh-CN') ? 0.8 : 0.85;
     window.speechSynthesis.speak(u);
   }
 }
@@ -133,26 +248,27 @@ function switchMode(mode) {
   quizAnswered = false;
   document.querySelectorAll('.modes button').forEach(b => b.classList.remove('active'));
   document.getElementById('btn-' + mode).classList.add('active');
-  
   document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
   document.getElementById('card-' + mode).classList.add('active');
-  
   document.getElementById('q-feedback').textContent = '';
   updateUI();
 }
 
 function updateUI() {
-  if (words.length === 0) return;
-  const w = words[currentIndex];
+  if (currentWords.length === 0) {
+    document.getElementById('counter').textContent = `0 / 0`;
+    document.getElementById('btn-prev').disabled = true;
+    document.getElementById('btn-next').disabled = true;
+    return;
+  }
+  
+  const w = currentWords[currentIndex];
   thaiText = w.thai;
   chineseText = w.chinese;
 
-  // 更新计数器
-  document.getElementById('counter').textContent = `${currentIndex + 1} / ${words.length}`;
-  
-  // 按钮状态
+  document.getElementById('counter').textContent = `${currentIndex + 1} / ${currentWords.length}`;
   document.getElementById('btn-prev').disabled = currentIndex === 0;
-  document.getElementById('btn-next').disabled = currentIndex === words.length - 1;
+  document.getElementById('btn-next').disabled = currentIndex === currentWords.length - 1;
 
   if (currentMode === 'learn') {
     document.getElementById('l-thai').textContent = w.thai;
@@ -161,29 +277,25 @@ function updateUI() {
     document.getElementById('l-pinyin').textContent = w.pinyin;
   } 
   else if (currentMode === 'recite') {
-    isFlipped = false;
-    currentReciteLang = 'th';
+    isFlipped = false; currentReciteLang = 'th';
     document.getElementById('r-text').textContent = w.thai;
     document.getElementById('r-roman').textContent = w.roman;
     document.getElementById('r-text').className = 'thai';
-    document.getElementById('r-roman').className = 'roman';
   } 
   else if (currentMode === 'quiz') {
     quizAnswered = false;
     document.getElementById('q-feedback').textContent = '';
-    document.getElementById('q-question').textContent = w.thai; // 问泰语，选中文
+    document.getElementById('q-question').textContent = w.thai;
     document.getElementById('q-options').innerHTML = '';
     
-    // 生成选项（正确答案 + 3个随机错误答案）
     let options = [w.chinese];
-    let pool = words.filter(item => item.chinese !== w.chinese);
-    while (options.length < Math.min(4, words.length)) {
+    let pool = currentWords.filter(item => item.chinese !== w.chinese);
+    if (pool.length < 3) pool = pool.concat(allWords.filter(item => item.chinese !== w.chinese));
+
+    while (options.length < Math.min(4, allWords.length) && pool.length > 0) {
       let randomWord = pool[Math.floor(Math.random() * pool.length)];
-      if (!options.includes(randomWord.chinese)) {
-        options.push(randomWord.chinese);
-      }
+      if (!options.includes(randomWord.chinese)) options.push(randomWord.chinese);
     }
-    // 打乱选项
     options.sort(() => Math.random() - 0.5);
     
     options.forEach(opt => {
@@ -197,7 +309,7 @@ function updateUI() {
 
 function toggleRecite() {
   isFlipped = !isFlipped;
-  const w = words[currentIndex];
+  const w = currentWords[currentIndex];
   if (isFlipped) {
     currentReciteLang = 'zh';
     document.getElementById('r-text').textContent = w.chinese;
@@ -214,7 +326,6 @@ function toggleRecite() {
 function checkAnswer(selected, correct, btnElement) {
   if (quizAnswered) return;
   quizAnswered = true;
-  
   const allBtns = document.getElementById('q-options').querySelectorAll('button');
   allBtns.forEach(b => b.disabled = true);
 
@@ -224,27 +335,97 @@ function checkAnswer(selected, correct, btnElement) {
     document.getElementById('q-feedback').style.color = '#10b981';
   } else {
     btnElement.classList.add('wrong');
-    document.getElementById('q-feedback').textContent = `❌ 错误，正确答案是：${correct}`;
+    document.getElementById('q-feedback').textContent = `❌ 错误，正确答案：${correct}`;
     document.getElementById('q-feedback').style.color = '#ef4444';
-    allBtns.forEach(b => {
-      if (b.textContent === correct) b.classList.add('correct');
-    });
+    allBtns.forEach(b => { if (b.textContent === correct) b.classList.add('correct'); });
   }
 }
 
-function prevCard() {
-  if (currentIndex > 0) {
-    currentIndex--;
-    updateUI();
+function prevCard() { if (currentIndex > 0) { currentIndex--; updateUI(); } }
+function nextCard() { if (currentIndex < currentWords.length - 1) { currentIndex++; updateUI(); } }
+
+// ================= 后台管理逻辑 =================
+
+function openAdmin() {
+  document.getElementById('admin-modal').classList.add('active');
+  renderAdminList();
+}
+
+function closeAdmin() {
+  document.getElementById('admin-modal').classList.remove('active');
+  // 关闭时同步更新前台数据
+  initTags();
+  filterWords();
+}
+
+function renderAdminList() {
+  const list = document.getElementById('admin-list');
+  list.innerHTML = '';
+  allWords.forEach((w, index) => {
+    const div = document.createElement('div');
+    div.className = 'word-item';
+    const tagsStr = w.tags ? w.tags.join(', ') : '';
+    div.innerHTML = `
+      <div class="info"><b>${w.thai}</b> - ${w.chinese} <br><small style="color:#888">标签: ${tagsStr}</small></div>
+      <div class="ops"><button onclick="deleteWord(${index})">删除</button></div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function addWord() {
+  const thai = document.getElementById('in-thai').value.trim();
+  const roman = document.getElementById('in-roman').value.trim();
+  const chinese = document.getElementById('in-chinese').value.trim();
+  const pinyin = document.getElementById('in-pinyin').value.trim();
+  const tagsInput = document.getElementById('in-tags').value.trim();
+
+  if (!thai || !chinese) {
+    alert('泰语和中文不能为空！');
+    return;
+  }
+
+  // 将逗号分隔的标签转为数组
+  const tags = tagsInput ? tagsInput.split(/[,，]/).map(t => t.trim()).filter(t => t) : [];
+
+  allWords.push({ thai, roman, chinese, pinyin, tags });
+  
+  // 清空输入框
+  document.getElementById('in-thai').value = '';
+  document.getElementById('in-roman').value = '';
+  document.getElementById('in-chinese').value = '';
+  document.getElementById('in-pinyin').value = '';
+  document.getElementById('in-tags').value = '';
+
+  saveToLocal();
+  renderAdminList();
+}
+
+function deleteWord(index) {
+  if (confirm('确定要删除这个词吗？')) {
+    allWords.splice(index, 1);
+    saveToLocal();
+    renderAdminList();
   }
 }
 
-function nextCard() {
-  if (currentIndex < words.length - 1) {
-    currentIndex++;
-    updateUI();
-  }
+function saveToLocal() {
+  // 存入浏览器缓存，方便你在后台预览
+  localStorage.setItem('my_thai_words', JSON.stringify(allWords));
 }
+
+function exportData() {
+  // 把你添加的词汇生成为标准的 JSON 格式供复制
+  const dataStr = JSON.stringify(allWords, null, 2);
+  navigator.clipboard.writeText(dataStr).then(() => {
+    alert('✅ 词库 JSON 已复制到剪贴板！\n\n请去 GitHub 打开 words.json 文件，全选删除旧内容，粘贴刚刚复制的代码并提交，即可对所有学习者生效。');
+  }).catch(() => {
+    prompt('自动复制失败，请手动复制以下代码，去 GitHub 替换 words.json：', dataStr);
+  });
+}
+
+// 启动应用
+initData();
 </script>
 </body>
 </html>
