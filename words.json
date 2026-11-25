@@ -4,13 +4,38 @@
     "roman": "èek-kà-sǎan",
     "chinese": "文件",
     "pinyin": "wén jiàn",
-    "tags": ["文件管制", "办公用品"]
+    "tags": [
+      "文件管制",
+      "办公用品"
+    ]
+  },
+  {
+    "thai": "เวอร์ชัน",
+    "roman": "wəə-chan",
+    "chinese": "版本",
+    "pinyin": "bǎn běn",
+    "tags": [
+      "文件管制"
+    ]
   },
   {
     "thai": "สวัสดี",
     "roman": "sà-wàt-dii",
     "chinese": "你好",
     "pinyin": "nǐ hǎo",
-    "tags": ["日常对话"]
+    "tags": [
+      "日常对话"
+    ]
+  },
+  {
+    "thai": "การตรวเช็ด",
+    "roman": "",
+    "chinese": "点检",
+    "pinyin": "",
+    "tags": [
+      "操作",
+      "PD",
+      "AOI"
+    ]
   }
 ]
