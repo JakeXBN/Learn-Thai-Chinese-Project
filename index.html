@@ -231,16 +231,46 @@ function filterWords() {
   updateUI();
 }
 
-// 语音引擎调整
+// 语音引擎调整 (加强版：强制寻找普通话发音人)
 function speak(text, lang) {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang;
     u.rate = (lang === 'zh-CN') ? 0.8 : 0.85;
+
+    // 【新增】强制寻找最适合的声音
+    const voices = window.speechSynthesis.getVoices();
+    if (lang === 'zh-CN') {
+      // 优先寻找带有普通话、中国、或者 Xiaoxiao / Yaoyao / Tingting 的系统默认声音
+      const zhVoice = voices.find(v => 
+        v.lang === 'zh-CN' || 
+        v.name.includes('Mandarin') || 
+        v.name.includes('普通话') || 
+        v.name.includes('Xiaoxiao') || 
+        v.name.includes('Yaoyao') || 
+        v.name.includes('Tingting') ||
+        v.name.includes('Huihui')
+      );
+      if (zhVoice) u.voice = zhVoice;
+    } else if (lang === 'th-TH') {
+      // 优先寻找泰语声音
+      const thVoice = voices.find(v => 
+        v.lang === 'th-TH' || 
+        v.name.includes('Thai') || 
+        v.name.includes('Premwadee')
+      );
+      if (thVoice) u.voice = thVoice;
+    }
+
     window.speechSynthesis.speak(u);
   }
 }
+
+// 【新增】有些浏览器需要触发一下，才能加载出语音包列表
+window.speechSynthesis.onvoiceschanged = () => {
+  window.speechSynthesis.getVoices();
+};
 
 function switchMode(mode) {
   currentMode = mode;
